@@ -100,11 +100,11 @@ class App extends React.PureComponent<Props, State> {
       id: `option-${i}`,
       label: c.label,
       selected: false,
-      showIcon: false,
+      showMovableIcon: false,
       val: SKIP_VALUE
     }));
     this.setState({
-      items: [options[0]],
+      items: [options[0]], // Start with one option (select menu)
       options
     });
   };
@@ -139,48 +139,52 @@ class App extends React.PureComponent<Props, State> {
     const {
       container: { current: container }
     } = this;
-    const newOptions = [...this.state.options];
-    const newItems = [...this.state.items];
+    // Immutable state
+    const options = [...this.state.options];
+    const items = [...this.state.items];
     const menus = container.querySelectorAll("select");
-    const menuId = parseInt(id.split("-")[1]);
+    const menuId = parseInt(id.split("-")[1]); // e.g., "option-10" -> "10"
     const hasPreviousValue = previousValue && previousValue !== SKIP_VALUE;
+    // Menu was selected before
     if (hasPreviousValue) {
-      const previousOptionIndex = newOptions.findIndex(
-        o => o.id === previousValue
-      );
-      newOptions[previousOptionIndex].selected = false;
+      const previousOption = options.find(o => o.id === previousValue);
+      previousOption.selected = false;
+      // Option was deselected
       if (value === SKIP_VALUE) {
-        const item = newItems[menuId];
-        item.showIcon = false;
+        const item = items[menuId];
+        item.showMovableIcon = false;
         item.val = SKIP_VALUE;
         // Move deselected item to end of list
-        newItems.splice(menuId, 1);
-        newItems.push(item);
+        items.splice(menuId, 1);
+        items.push(item);
       }
     }
+    // A non-default menu option was selected
     if (value !== SKIP_VALUE) {
-      const optionIndex = newOptions.findIndex(o => o.id === value);
-      newOptions[optionIndex].selected = true;
-      newItems[menuId].showIcon = true;
-      newItems[menuId].val = value;
-      const addItem =
-        !hasPreviousValue &&
-        menus.length < newOptions.length &&
-        menuId === newItems.length - 1;
-      if (addItem) {
-        newItems.push(newOptions[menuId + 1]);
+      const optionIndex = options.findIndex(o => o.id === value);
+      options[optionIndex].selected = true;
+      items[menuId].showMovableIcon = true;
+      items[menuId].val = value;
+      const shouldAddItem =
+        !hasPreviousValue && // Was not selected before
+        menus.length < options.length && // Still menus left to append
+        menuId === items.length - 1; // Is the last menu item currently rendered
+      if (shouldAddItem) {
+        items.push(options[menuId + 1]);
       }
       menus.forEach((menu, i) => {
         const previousMenuWasSkipped = menu.value === SKIP_VALUE && i < menuId;
+        // Selected an option but an earlier menu is set to default value
         if (previousMenuWasSkipped) {
-          const item = newItems[i];
-          newItems.splice(i, 1);
-          newItems.push(item);
+          const item = items[i];
+          // Rearrange items, send unselected item to end of list
+          items.splice(i, 1);
+          items.push(item);
         }
       });
     }
     target.previousValue = value;
-    this.setState({ options: newOptions, items: newItems });
+    this.setState({ options, items });
   };
 
   handleSubmit = () => {
@@ -223,7 +227,7 @@ class App extends React.PureComponent<Props, State> {
                             }}
                           >
                             {i < this.state.items.length && (
-                              <ArrowIcon show={item.showIcon} />
+                              <ArrowIcon show={item.showMovableIcon} />
                             )}
                             <BoxBorder
                               alignItems="center"
