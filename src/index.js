@@ -1,12 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
+import {
+  createRenderer,
+  Provider,
+  ThemeProvider,
+} from '@mentimeter/ragnar-react';
+import { designSystemConfig } from '@mentimeter/ragnar-dsc';
+import * as fonts from '@mentimeter/ragnar-fonts';
+import { reset, setup } from '@mentimeter/ragnar-reset';
 import App from './App';
-import * as serviceWorker from './serviceWorker';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const renderer = createRenderer();
+renderer.renderStatic(reset(setup(`body, #root`)));
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: http://bit.ly/CRA-PWA
-serviceWorker.unregister();
+Object.keys(fonts).forEach(key => {
+  renderer.renderFont('Gilroy', fonts[key].files, fonts[key].style);
+});
+
+ReactDOM.render(
+  <Provider renderer={renderer}>
+    <ThemeProvider theme={designSystemConfig}>
+      <App />
+    </ThemeProvider>
+  </Provider>,
+  document.getElementById('root'),
+);
