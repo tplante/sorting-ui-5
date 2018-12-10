@@ -15,7 +15,7 @@ import {
 
 const SKIP_VALUE = "skip";
 const DEFAULT_OPTION = "Select an option";
-const ICON_SIZE = 25;
+const ICON_SIZE = 20;
 const GRID_SIZE = 25;
 const GUTTER_SIZE = GRID_SIZE / 2;
 const ITEM_SIZE = GRID_SIZE * 2;
@@ -46,24 +46,20 @@ const reorder = (list, startIndex, endIndex) => {
 const getItemStyle = (isDragging, draggableStyle, isLastItem) => ({
   position: "relative",
   userSelect: "none",
-  padding: GRID_SIZE,
-  margin: `0 0 ${GUTTER_SIZE}px 0`,
-  // Change background colour if dragging
+  // Change background color if dragging
   background: isDragging || isLastItem ? "transparent" : "#d8d8d8",
   border: isDragging || isLastItem ? "2px dashed #d8d8d8" : "2px solid #d8d8d8",
   // Styles to apply on draggables
   ...draggableStyle
 });
 const iconStyles = {
-  opacity: 0,
-  transition: "0.2s ease-in-out",
   position: "absolute",
-  left: -ICON_SIZE,
+  left: -GRID_SIZE,
   top: GRID_SIZE,
   width: ICON_SIZE,
   height: ICON_SIZE,
   viewBox: `0 0 ${ICON_SIZE} ${ICON_SIZE}`,
-  fill: "#2c5c6c"
+  fill: "#2C5C6C"
 };
 const optionStyles = {
   display: "flex",
