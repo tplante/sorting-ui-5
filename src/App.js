@@ -4,7 +4,14 @@ import { createRef } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 // Redux
-import { Box, BoxBorder, Label, Select, Text } from "@mentimeter/ragnar-web";
+import {
+  Box,
+  BoxBorder,
+  Button,
+  Label,
+  Select,
+  Text
+} from "@mentimeter/ragnar-web";
 
 const SKIP_VALUE = "skip";
 const ICON_SIZE = 25;
@@ -62,7 +69,7 @@ const optionStyles = {
   fontWeight: "bold",
   cursor: "pointer",
   borderRadius: 3,
-  margin: `${GUTTER_SIZE}px ${GRID_SIZE}px 0 ${GRID_SIZE}px`,
+  margin: `${GUTTER_SIZE}px ${GRID_SIZE}px 0 ${2 * GRID_SIZE}px`,
   padding: `${GUTTER_SIZE}px ${GRID_SIZE}px ${GUTTER_SIZE}px ${GUTTER_SIZE}px`
 };
 
@@ -154,6 +161,12 @@ class App extends React.PureComponent<Props, State> {
         const item = items[menuId];
         item.showMovableIcon = false;
         item.val = SKIP_VALUE;
+        // Remove any extra deselected items from end of list
+        items.forEach((item, i) => {
+          if (i !== menuId && item.val === SKIP_VALUE) {
+            items.splice(i, 1);
+          }
+        });
         // Move deselected item to end of list
         items.splice(menuId, 1);
         items.push(item);
@@ -197,7 +210,7 @@ class App extends React.PureComponent<Props, State> {
         <Box width="100%" height="100%" maxWidth="450px" m="0 auto">
           <Box my={2} alignItems="center">
             <Text
-              color="brand"
+              color="#2C5C6C"
               fontSize={5}
               fontWeight="bold"
               textAlign="center"
@@ -287,6 +300,9 @@ class App extends React.PureComponent<Props, State> {
                 )}
               </Droppable>
             </DragDropContext>
+            <Box mt={GRID_SIZE}>
+              <Button onSubmit={this.handleSubmit}>Submit</Button>
+            </Box>
           </Box>
         </Box>
       </div>
