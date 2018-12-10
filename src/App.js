@@ -203,8 +203,10 @@ class App extends React.PureComponent<Props, State> {
   };
 
   render() {
-    const isLastItem = i =>
-      i === this.state.items.length - 1 && this.state.items.length !== 1;
+    const isLastItem = (item, index) =>
+      !item.showMovableIcon && // Not selected
+      index === this.state.items.length - 1 && // Last item
+      this.state.items.length !== 1; // More than one available option
     return (
       <div ref={this.container}>
         <Box width="100%" height="100%" maxWidth="450px" m="0 auto">
@@ -235,12 +237,12 @@ class App extends React.PureComponent<Props, State> {
                               ...getItemStyle(
                                 snapshot.isDragging,
                                 provided.draggableProps.style,
-                                isLastItem(i)
+                                isLastItem(item, i)
                               ),
                               ...optionStyles
                             }}
                           >
-                            {!isLastItem(i) && (
+                            {!isLastItem(item, i) && (
                               <ArrowIcon show={item.showMovableIcon} />
                             )}
                             <BoxBorder
@@ -253,12 +255,12 @@ class App extends React.PureComponent<Props, State> {
                               borderRadius="50%"
                             >
                               <Label
-                                value={isLastItem(i) ? "+" : i + 1}
+                                value={isLastItem(item, i) ? "+" : i + 1}
                                 htmlFor={`menu-${i}`}
                                 color="white"
                                 mt={1}
                               >
-                                {isLastItem(i) ? "+" : i + 1}
+                                {isLastItem(item, i) ? "+" : i + 1}
                               </Label>
                             </BoxBorder>
                             <Box
