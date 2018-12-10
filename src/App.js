@@ -298,7 +298,9 @@ class App extends React.PureComponent<Props, State> {
                                 textAlign="center"
                                 fontSize={3}
                               >
-                                {!isLastItem(item, i) && "x"}
+                                {!isLastItem(item, i) &&
+                                  this.state.items.length > 1 &&
+                                  "x"}
                               </Text>
                             </Box>
                           </div>
