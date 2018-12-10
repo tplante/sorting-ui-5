@@ -43,13 +43,14 @@ const reorder = (list, startIndex, endIndex) => {
 
   return result;
 };
-const getItemStyle = (isDragging, draggableStyle) => ({
+const getItemStyle = (isDragging, draggableStyle, isLastItem) => ({
   position: "relative",
   userSelect: "none",
   padding: GRID_SIZE,
   margin: `0 0 ${GUTTER_SIZE}px 0`,
   // Change background colour if dragging
-  background: isDragging ? "lightgreen" : "#d8d8d8",
+  background: isDragging || isLastItem ? "transparent" : "#d8d8d8",
+  border: isDragging || isLastItem ? "2px dashed #d8d8d8" : "2px solid #d8d8d8",
   // Styles to apply on draggables
   ...draggableStyle
 });
@@ -202,6 +203,8 @@ class App extends React.PureComponent<Props, State> {
   };
 
   render() {
+    const isLastItem = i =>
+      i === this.state.items.length - 1 && this.state.items.length !== 1;
     return (
       <div ref={this.container}>
         <Box width="100%" height="100%" maxWidth="450px" m="0 auto">
@@ -231,12 +234,13 @@ class App extends React.PureComponent<Props, State> {
                             style={{
                               ...getItemStyle(
                                 snapshot.isDragging,
-                                provided.draggableProps.style
+                                provided.draggableProps.style,
+                                isLastItem(i)
                               ),
                               ...optionStyles
                             }}
                           >
-                            {i < this.state.items.length && (
+                            {!isLastItem(i) && (
                               <ArrowIcon show={item.showMovableIcon} />
                             )}
                             <BoxBorder
@@ -249,12 +253,12 @@ class App extends React.PureComponent<Props, State> {
                               borderRadius="50%"
                             >
                               <Label
-                                value={i + 1}
+                                value={isLastItem(i) ? "+" : i + 1}
                                 htmlFor={`menu-${i}`}
                                 color="white"
                                 mt={1}
                               >
-                                {i + 1}
+                                {isLastItem(i) ? "+" : i + 1}
                               </Label>
                             </BoxBorder>
                             <Box
