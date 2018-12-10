@@ -68,7 +68,7 @@ const optionStyles = {
   cursor: "pointer",
   borderRadius: 3,
   margin: `${GUTTER_SIZE}px ${GRID_SIZE}px 0 ${GRID_SIZE}px`,
-  padding: `${GUTTER_SIZE}px ${GRID_SIZE}px ${GUTTER_SIZE}px ${GUTTER_SIZE}px`
+  padding: `${GUTTER_SIZE}px 0 ${GUTTER_SIZE}px ${GUTTER_SIZE}px`
 };
 
 const ArrowIcon = ({ show }) => {
@@ -142,33 +142,14 @@ class App extends React.PureComponent<Props, State> {
       target,
       target: { value, previousValue, id }
     } = event;
-    const {
-      container: { current: container }
-    } = this;
     const options = [...this.state.options]; // Prevent mutation
     const items = [...this.state.items]; // Prevent mutation
-    const menus = container.querySelectorAll("select");
     const menuId = parseInt(id.split("-")[1]); // e.g., "option-10" -> "10"
     const selectedItem = items[menuId];
-    const hasPreviousValue = previousValue && previousValue !== SKIP_VALUE;
     // Menu was selected before
-    if (hasPreviousValue) {
+    if (previousValue) {
       const previousOption = options.find(o => o.id === previousValue);
       previousOption.selected = false;
-      // Option was deselected
-      if (value === SKIP_VALUE) {
-        selectedItem.showMovableIcon = false;
-        selectedItem.val = SKIP_VALUE;
-        // Remove any extra deselected items from end of list
-        items.forEach((item, i) => {
-          if (i !== menuId && item.val === SKIP_VALUE) {
-            items.splice(i, 1);
-          }
-        });
-        // Move deselected item to end of list
-        items.splice(menuId, 1);
-        items.push(selectedItem);
-      }
     }
     // A non-default menu option was selected
     if (value !== SKIP_VALUE) {
@@ -176,9 +157,7 @@ class App extends React.PureComponent<Props, State> {
       option.selected = true;
       selectedItem.val = value;
       const shouldAddItem =
-        !hasPreviousValue && // Was not selected before
-        menus.length < options.length && // Still menus left to append
-        menuId === items.length - 1; // Is the last menu item currently rendered
+        items.length < options.length && menuId === items.length - 1; // Still menus left to append // Is the last menu item currently rendered
       if (shouldAddItem) {
         const newItem = { ...options[menuId + 1] }; // Copy of next option, prevent mutation
         newItem.id = `option-${options.length + this.keyGenerationIndex}`;
@@ -194,6 +173,27 @@ class App extends React.PureComponent<Props, State> {
     this.setState({ options, items });
   };
 
+  handleDeselect = event => {
+    const {
+      target: { id }
+    } = event;
+    const items = [...this.state.items]; // Prevent mutation
+    const menuId = parseInt(id.split("-")[1]);
+    const item = items[menuId];
+    item.showMovableIcon = false;
+    item.val = SKIP_VALUE;
+    // Remove any extra deselected items from end of list
+    items.forEach((item, i) => {
+      if (i !== menuId && item.val === SKIP_VALUE) {
+        items.splice(i, 1);
+      }
+    });
+    // Move deselected item to end of list
+    items.splice(menuId, 1);
+    items.push(item);
+    this.setState({ items });
+  };
+
   handleSubmit = () => {
     this.setState({ submitted: !this.state.submitted });
   };
@@ -207,12 +207,7 @@ class App extends React.PureComponent<Props, State> {
       <div ref={this.container}>
         <Box width="100%" height="100%" maxWidth="450px" m="0 auto">
           <Box my={2} alignItems="center">
-            <Text
-              color="#2C5C6C"
-              fontSize={5}
-              fontWeight="bold"
-              textAlign="center"
-            >
+            <Text fontSize={5} fontWeight="bold" textAlign="center">
               Choose your favorite candidates
             </Text>
           </Box>
@@ -268,11 +263,13 @@ class App extends React.PureComponent<Props, State> {
                                 id={`menu-${i}`}
                                 name={`menu-${i}`}
                                 onChange={this.handleChange}
+                                pr="20px"
                               >
                                 <Select.Option
                                   id={SKIP_VALUE}
                                   value={SKIP_VALUE}
                                   defaultValue
+                                  disabled={item.val !== SKIP_VALUE}
                                 >
                                   {DEFAULT_OPTION}
                                 </Select.Option>
@@ -289,6 +286,20 @@ class App extends React.PureComponent<Props, State> {
                                     )
                                 )}
                               </Select>
+                            </Box>
+                            <Box
+                              alignItems="center"
+                              justifyContent="center"
+                              onClick={this.handleDeselect}
+                              px={3}
+                            >
+                              <Text
+                                id={`deselect-${i}`}
+                                textAlign="center"
+                                fontSize={3}
+                              >
+                                {!isLastItem(item, i) && "x"}
+                              </Text>
                             </Box>
                           </div>
                         )}
