@@ -16,7 +16,7 @@ import {
 const SKIP_VALUE = "skip";
 const DEFAULT_OPTION = "Select an option";
 const ICON_SIZE = 25;
-const GRID_SIZE = 20;
+const GRID_SIZE = 25;
 const GUTTER_SIZE = GRID_SIZE / 2;
 const ITEM_SIZE = GRID_SIZE * 2;
 
@@ -71,7 +71,7 @@ const optionStyles = {
   fontWeight: "bold",
   cursor: "pointer",
   borderRadius: 3,
-  margin: `${GUTTER_SIZE}px ${GRID_SIZE}px 0 ${2 * GRID_SIZE}px`,
+  margin: `${GUTTER_SIZE}px ${GRID_SIZE}px 0 ${GRID_SIZE}px`,
   padding: `${GUTTER_SIZE}px ${GRID_SIZE}px ${GUTTER_SIZE}px ${GUTTER_SIZE}px`
 };
 
@@ -303,7 +303,7 @@ class App extends React.PureComponent<Props, State> {
                 )}
               </Droppable>
             </DragDropContext>
-            <Box mt={GRID_SIZE}>
+            <Box my={4}>
               <Button onSubmit={this.handleSubmit}>Submit</Button>
             </Box>
           </Box>
