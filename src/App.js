@@ -215,8 +215,6 @@ class App extends React.PureComponent<Props, State> {
     if (!option) {
       return;
     }
-    item.showMovableIcon = false;
-    item.val = SKIP_VALUE;
     option.selected = false;
     // Remove any extra deselected items from end of list
     items.forEach((item, i) => {
@@ -225,8 +223,10 @@ class App extends React.PureComponent<Props, State> {
       }
     });
     // Move deselected item to end of list
-    items.splice(menuId, 1);
     const newItem = this.getNewItem(options, menuId);
+    newItem.val = SKIP_VALUE;
+    newItem.showMovableIcon = false;
+    items.splice(menuId, 1);
     items.push(newItem);
     this.setState({ options, items });
   };
