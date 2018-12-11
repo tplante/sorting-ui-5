@@ -164,11 +164,19 @@ class App extends React.PureComponent<Props, State> {
   };
 
   handleChange = event => {
-    const { value, id } = event.target;
+    const {
+      target,
+      target: { value, id, previousValue }
+    } = event;
     const options = [...this.state.options]; // Prevent mutation
     const items = [...this.state.items]; // Prevent mutation
     const menuId = parseInt(id.split("-")[1]); // e.g., "option-10" -> "10"
     const selectedItem = items[menuId];
+    // Option was selected before
+    if (previousValue) {
+      const previousOption = options.find(o => o.id === previousValue);
+      previousOption.selected = false;
+    }
     // A non-default menu option was selected
     if (value !== SKIP_VALUE) {
       const option = options.find(o => o.id === value);
@@ -185,6 +193,7 @@ class App extends React.PureComponent<Props, State> {
         items.forEach(item => (item.showMovableIcon = item.val !== SKIP_VALUE));
       }
     }
+    target.previousValue = value;
     this.setState({ options, items });
   };
 
