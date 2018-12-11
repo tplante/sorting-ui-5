@@ -12,11 +12,13 @@ import {
   Select,
   Text
 } from "@mentimeter/ragnar-web";
+import { CrossIcon } from "@mentimeter/ragnar-visuals";
 
 const SKIP_VALUE = "skip";
 const DEFAULT_OPTION = "Select an option";
 const ICON_SIZE = 20;
-const GRID_SIZE = 25;
+const ICON_MARGIN = 5;
+const GRID_SIZE = 20;
 const GUTTER_SIZE = GRID_SIZE / 2;
 const ITEM_SIZE = GRID_SIZE * 2;
 
@@ -53,13 +55,20 @@ const getItemStyle = (isDragging, draggableStyle, isLastItem) => ({
   ...draggableStyle
 });
 const iconStyles = {
-  position: "absolute",
-  left: -GRID_SIZE,
-  top: GRID_SIZE,
   width: ICON_SIZE,
   height: ICON_SIZE,
-  viewBox: `0 0 ${ICON_SIZE} ${ICON_SIZE}`,
-  fill: "#2C5C6C"
+  viewBox: `0 0 ${ICON_SIZE} ${ICON_SIZE}`
+};
+const moveIconStyles = {
+  ...iconStyles,
+  position: "absolute",
+  left: -ICON_SIZE - ICON_MARGIN,
+  top: GRID_SIZE,
+  stroke: "#2C5C6C"
+};
+const plusIconStyles = {
+  ...iconStyles,
+  stroke: "#FFFFFF"
 };
 const optionStyles = {
   display: "flex",
@@ -74,18 +83,35 @@ const optionStyles = {
 const ArrowIcon = ({ show }) => {
   return (
     <svg
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       style={{
-        ...iconStyles,
+        ...moveIconStyles,
         opacity: show ? 1 : 0
       }}
     >
-      <path
-        d="M13.7578943,16.6318165 L10.6642975,19.7254012 C10.2981644,20.0915329 9.70460909,20.0915329 9.33847592,19.7254012 L6.24487915,16.6318165 C5.65429263,16.0412323 6.07257429,15.0313915 6.90780948,15.0314306 L8.90632706,15.0314306 L8.90628799,11.0937468 L4.9686279,11.0937468 L4.9686279,13.0922566 C4.9686279,13.9274885 3.95882223,14.3457685 3.36819665,13.7551843 L0.274599878,10.6615996 C-0.0915332925,10.2954679 -0.0915332925,9.70187587 0.274599878,9.3357832 L3.36819665,6.24219851 C3.95878316,5.6516143 4.9686279,6.06989433 4.9686279,6.90512625 L4.9686279,8.9062532 L8.90628799,8.9062532 L8.90628799,4.96860849 L6.90511417,4.96860849 C6.06987897,4.96860849 5.65159732,3.95880676 6.24218383,3.36818349 L9.3357806,0.274598805 C9.70191377,-0.091532935 10.295469,-0.091532935 10.6616022,0.274598805 L13.755199,3.36818349 C14.3457855,3.9587677 13.9275038,4.96860849 13.0922686,4.96860849 L11.0937511,4.96860849 L11.0937511,8.9062532 L15.0314112,8.9062532 L15.0314112,6.90774343 C15.0314112,6.07251151 16.0412168,5.65423148 16.6318034,6.24481569 L19.7254001,9.33840038 C20.0915333,9.70453212 20.0915333,10.2981241 19.7254001,10.6642168 L16.6318034,13.7578015 C16.0412168,14.3483857 15.0313721,13.9301057 15.0314112,13.0948737 L15.0314112,11.0937468 L11.0937901,11.0937468 L11.0937901,15.0313915 L13.094964,15.0313915 C13.9301992,15.0313915 14.3484808,16.0411932 13.7578943,16.6318165 Z"
-        id="Path"
-      />
+      <polyline points="3.7 7.3 1 10 3.7 12.7" />
+      <polyline points="7.3 3.7 10 1 12.7 3.7" />
+      <polyline points="12.7 16.3 10 19 7.3 16.3" />
+      <polyline points="16.3 7.3 19 10 16.3 12.7" />
+      <path d="M1,10 L19,10" />
+      <path d="M10,1 L10,19" />
     </svg>
   );
 };
+
+const PlusIcon = () => (
+  <svg
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={plusIconStyles}
+  >
+    <path d="M10,1 L10,19" />
+    <path d="M1,10 L19,10" />
+  </svg>
+);
 
 class App extends React.PureComponent<Props, State> {
   state = {
@@ -138,19 +164,11 @@ class App extends React.PureComponent<Props, State> {
   };
 
   handleChange = event => {
-    const {
-      target,
-      target: { value, previousValue, id }
-    } = event;
+    const { value, id } = event.target;
     const options = [...this.state.options]; // Prevent mutation
     const items = [...this.state.items]; // Prevent mutation
     const menuId = parseInt(id.split("-")[1]); // e.g., "option-10" -> "10"
     const selectedItem = items[menuId];
-    // Menu was selected before
-    if (previousValue) {
-      const previousOption = options.find(o => o.id === previousValue);
-      previousOption.selected = false;
-    }
     // A non-default menu option was selected
     if (value !== SKIP_VALUE) {
       const option = options.find(o => o.id === value);
@@ -159,9 +177,7 @@ class App extends React.PureComponent<Props, State> {
       const shouldAddItem =
         items.length < options.length && menuId === items.length - 1; // Still menus left to append // Is the last menu item currently rendered
       if (shouldAddItem) {
-        const newItem = { ...options[menuId + 1] }; // Copy of next option, prevent mutation
-        newItem.id = `option-${options.length + this.keyGenerationIndex}`;
-        this.keyGenerationIndex++;
+        const newItem = this.getNewItem(options, menuId);
         items.push(newItem);
       }
       const itemsAreMoveable = items.length > 2;
@@ -169,19 +185,30 @@ class App extends React.PureComponent<Props, State> {
         items.forEach(item => (item.showMovableIcon = item.val !== SKIP_VALUE));
       }
     }
-    target.previousValue = value;
     this.setState({ options, items });
   };
 
+  getNewItem = (options, menuId) => {
+    const newItem = { ...options[menuId + 1] }; // Copy of next option, prevent mutation
+    newItem.id = `option-${options.length + this.keyGenerationIndex}`;
+    this.keyGenerationIndex++;
+    return newItem;
+  };
+
   handleDeselect = event => {
-    const {
-      target: { id }
-    } = event;
+    const { id } = event.currentTarget; // Selects "this" element instead of any of its children
+    const options = [...this.state.options]; // Prevent mutation
     const items = [...this.state.items]; // Prevent mutation
     const menuId = parseInt(id.split("-")[1]);
     const item = items[menuId];
+    const itemId = parseInt(item.val.split("-")[1]);
+    const option = options[itemId];
+    if (!option) {
+      return;
+    }
     item.showMovableIcon = false;
     item.val = SKIP_VALUE;
+    option.selected = false;
     // Remove any extra deselected items from end of list
     items.forEach((item, i) => {
       if (i !== menuId && item.val === SKIP_VALUE) {
@@ -190,8 +217,9 @@ class App extends React.PureComponent<Props, State> {
     });
     // Move deselected item to end of list
     items.splice(menuId, 1);
-    items.push(item);
-    this.setState({ items });
+    const newItem = this.getNewItem(options, menuId);
+    items.push(newItem);
+    this.setState({ options, items });
   };
 
   handleSubmit = () => {
@@ -236,24 +264,24 @@ class App extends React.PureComponent<Props, State> {
                             {!isLastItem(item, i) && (
                               <ArrowIcon show={item.showMovableIcon} />
                             )}
-                            <BoxBorder
-                              alignItems="center"
-                              justifyContent="center"
-                              width={ITEM_SIZE}
-                              height={ITEM_SIZE}
-                              bg="brand"
-                              mr={GUTTER_SIZE}
-                              borderRadius="50%"
+                            <Label
+                              value={isLastItem(item, i) ? "+" : i + 1}
+                              htmlFor={`menu-${i}`}
+                              color="white"
+                              mt={1}
                             >
-                              <Label
-                                value={isLastItem(item, i) ? "+" : i + 1}
-                                htmlFor={`menu-${i}`}
-                                color="white"
-                                mt={1}
+                              <BoxBorder
+                                alignItems="center"
+                                justifyContent="center"
+                                width={ITEM_SIZE}
+                                height={ITEM_SIZE}
+                                bg="brand"
+                                mr={GUTTER_SIZE}
+                                borderRadius="50%"
                               >
-                                {isLastItem(item, i) ? "+" : i + 1}
-                              </Label>
-                            </BoxBorder>
+                                {isLastItem(item, i) ? <PlusIcon /> : i + 1}
+                              </BoxBorder>
+                            </Label>
                             <Box
                               flex={1}
                               alignItems="center"
@@ -288,20 +316,14 @@ class App extends React.PureComponent<Props, State> {
                               </Select>
                             </Box>
                             <Box
+                              id={`deselect-${i}`}
+                              onClick={this.handleDeselect}
                               alignItems="center"
                               justifyContent="center"
-                              onClick={this.handleDeselect}
-                              px={3}
+                              px={2}
                             >
-                              <Text
-                                id={`deselect-${i}`}
-                                textAlign="center"
-                                fontSize={3}
-                              >
-                                {!isLastItem(item, i) &&
-                                  this.state.items.length > 1 &&
-                                  "x"}
-                              </Text>
+                              {!isLastItem(item, i) &&
+                                this.state.items.length > 1 && <CrossIcon />}
                             </Box>
                           </div>
                         )}
@@ -312,7 +334,7 @@ class App extends React.PureComponent<Props, State> {
                 )}
               </Droppable>
             </DragDropContext>
-            <Box my={4}>
+            <Box my={3}>
               <Button onSubmit={this.handleSubmit}>Submit</Button>
             </Box>
           </Box>

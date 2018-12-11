@@ -8,6 +8,7 @@
     "@mentimeter/ragnar-fonts": "^0.0.2-next-40ca99.0",
     "@mentimeter/ragnar-react": "^0.0.2-next-40ca99.0",
     "@mentimeter/ragnar-reset": "^0.0.2-next-40ca99.0",
+    "@mentimeter/ragnar-visuals": "^0.0.5",
     "@mentimeter/ragnar-web": "^0.0.2-next-40ca99.0",
     "react": "^16.6.3",
     "react-beautiful-dnd": "^10.0.2",
