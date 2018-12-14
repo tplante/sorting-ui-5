@@ -62,8 +62,8 @@ const iconStyles = {
 const moveIconStyles = {
   ...iconStyles,
   position: "absolute",
-  left: -ICON_SIZE - ICON_MARGIN,
-  top: GRID_SIZE,
+  left: -ICON_SIZE - 2 * ICON_MARGIN,
+  padding: `${GRID_SIZE}px ${ICON_MARGIN}px`,
   stroke: "#2C5C6C"
 };
 const plusIconStyles = {
@@ -71,25 +71,18 @@ const plusIconStyles = {
   stroke: "#FFFFFF"
 };
 const optionStyles = {
-  display: "flex",
-  justifyContent: "space-between",
   fontWeight: "bold",
-  cursor: "pointer",
   borderRadius: 3,
-  margin: `${GUTTER_SIZE}px ${GRID_SIZE}px 0 ${GRID_SIZE}px`,
   padding: `${GUTTER_SIZE}px 0 ${GUTTER_SIZE}px ${GUTTER_SIZE}px`
 };
 
-const ArrowIcon = ({ show }) => {
+const ArrowIcon = () => {
   return (
     <svg
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{
-        ...moveIconStyles,
-        opacity: show ? 1 : 0
-      }}
+      style={moveIconStyles}
     >
       <polyline points="3.7 7.3 1 10 3.7 12.7" />
       <polyline points="7.3 3.7 10 1 12.7 3.7" />
@@ -241,8 +234,8 @@ class App extends React.PureComponent<Props, State> {
       index === this.state.items.length - 1 && // Last item
       this.state.items.length !== 1; // More than one available option
     return (
-      <div ref={this.container}>
-        <Box width="100%" height="100%" maxWidth="450px" m="0 auto">
+      <Box ref={this.container} alignItems="center">
+        <Box width="80%" maxWidth="350px">
           <Box my={2} alignItems="center">
             <Text fontSize={5} fontWeight="bold" textAlign="center">
               Choose your favorite candidates
@@ -252,15 +245,21 @@ class App extends React.PureComponent<Props, State> {
             <DragDropContext onDragEnd={this.handleDragEnd}>
               <Droppable droppableId="droppable">
                 {(provided, snapshot) => (
-                  <div ref={provided.innerRef}>
+                  <Box ref={provided.innerRef} width="100%" alignItems="center">
                     {this.state.items.map((item, i) => (
                       <Draggable key={item.id} draggableId={item.id} index={i}>
                         {(provided, snapshot) => (
-                          <div
+                          <Box
                             id={item.id}
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
+                            width="100%"
+                            height="100%"
+                            flexDirection="columns"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            mb={GUTTER_SIZE}
                             style={{
                               ...getItemStyle(
                                 snapshot.isDragging,
@@ -270,9 +269,8 @@ class App extends React.PureComponent<Props, State> {
                               ...optionStyles
                             }}
                           >
-                            {!isLastItem(item, i) && (
-                              <ArrowIcon show={item.showMovableIcon} />
-                            )}
+                            {!isLastItem(item, i) &&
+                              item.showMovableIcon && <ArrowIcon />}
                             <Label
                               value={isLastItem(item, i) ? "+" : i + 1}
                               htmlFor={`menu-${i}`}
@@ -334,12 +332,12 @@ class App extends React.PureComponent<Props, State> {
                               {!isLastItem(item, i) &&
                                 this.state.items.length > 1 && <CrossIcon />}
                             </Box>
-                          </div>
+                          </Box>
                         )}
                       </Draggable>
                     ))}
                     {provided.placeholder}
-                  </div>
+                  </Box>
                 )}
               </Droppable>
             </DragDropContext>
@@ -348,7 +346,7 @@ class App extends React.PureComponent<Props, State> {
             </Box>
           </Box>
         </Box>
-      </div>
+      </Box>
     );
   }
 }
