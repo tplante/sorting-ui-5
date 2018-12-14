@@ -48,40 +48,30 @@ const reorder = (list, startIndex, endIndex) => {
 const getItemStyle = (isDragging, draggableStyle, isLastItem) => ({
   position: "relative",
   userSelect: "none",
-  // Change background color if dragging
-  background: isDragging || isLastItem ? "transparent" : "#d8d8d8",
-  border: isDragging || isLastItem ? "2px dashed #d8d8d8" : "2px solid #d8d8d8",
+  overflow: "visible",
+  border:
+    isDragging || isLastItem
+      ? "2px dashed rgb(195, 200, 213)"
+      : "2px solid rgb(195, 200, 213)",
   // Styles to apply on draggables
   ...draggableStyle
 });
-const iconStyles = {
-  width: ICON_SIZE,
-  height: ICON_SIZE,
-  viewBox: `0 0 ${ICON_SIZE} ${ICON_SIZE}`
-};
 const moveIconStyles = {
-  ...iconStyles,
   position: "absolute",
   left: -ICON_SIZE - 2 * ICON_MARGIN,
-  padding: `${GRID_SIZE}px ${ICON_MARGIN}px`,
-  stroke: "#2C5C6C"
-};
-const plusIconStyles = {
-  ...iconStyles,
-  stroke: "#FFFFFF"
-};
-const optionStyles = {
-  fontWeight: "bold",
-  borderRadius: 3,
-  padding: `${GUTTER_SIZE}px 0 ${GUTTER_SIZE}px ${GUTTER_SIZE}px`
+  padding: `${GRID_SIZE}px ${ICON_MARGIN}px`
 };
 
 const ArrowIcon = () => {
   return (
     <svg
+      stroke="rgb(37, 43, 54)"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      width={ICON_SIZE}
+      height={ICON_SIZE}
+      viewBox={`0 0 ${ICON_SIZE} ${ICON_SIZE}`}
       style={moveIconStyles}
     >
       <polyline points="3.7 7.3 1 10 3.7 12.7" />
@@ -96,10 +86,13 @@ const ArrowIcon = () => {
 
 const PlusIcon = () => (
   <svg
+    stroke="white"
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    style={plusIconStyles}
+    width={ICON_SIZE}
+    height={ICON_SIZE}
+    viewBox={`0 0 ${ICON_SIZE} ${ICON_SIZE}`}
   >
     <path d="M10,1 L10,19" />
     <path d="M1,10 L19,10" />
@@ -244,12 +237,12 @@ class App extends React.PureComponent<Props, State> {
           <Box width="100%" alignItems="center">
             <DragDropContext onDragEnd={this.handleDragEnd}>
               <Droppable droppableId="droppable">
-                {(provided, snapshot) => (
+                {provided => (
                   <Box ref={provided.innerRef} width="100%" alignItems="center">
                     {this.state.items.map((item, i) => (
                       <Draggable key={item.id} draggableId={item.id} index={i}>
                         {(provided, snapshot) => (
-                          <Box
+                          <BoxBorder
                             id={item.id}
                             ref={provided.innerRef}
                             {...provided.draggableProps}
@@ -260,13 +253,20 @@ class App extends React.PureComponent<Props, State> {
                             alignItems="center"
                             justifyContent="space-between"
                             mb={GUTTER_SIZE}
+                            // Change background color if dragging
+                            bg={
+                              snapshot.isDragging || isLastItem(item, i)
+                                ? "transparent"
+                                : "shade-2"
+                            }
+                            borderRadius={1}
+                            p={`${GUTTER_SIZE}px 0 ${GUTTER_SIZE}px ${GUTTER_SIZE}px`}
                             style={{
                               ...getItemStyle(
                                 snapshot.isDragging,
                                 provided.draggableProps.style,
                                 isLastItem(item, i)
-                              ),
-                              ...optionStyles
+                              )
                             }}
                           >
                             {!isLastItem(item, i) &&
@@ -276,15 +276,18 @@ class App extends React.PureComponent<Props, State> {
                               htmlFor={`menu-${i}`}
                               color="white"
                               mt={1}
+                              fontWeight="bold"
                             >
                               <BoxBorder
                                 alignItems="center"
                                 justifyContent="center"
                                 width={ITEM_SIZE}
                                 height={ITEM_SIZE}
-                                bg="brand"
+                                bg={isLastItem(item, i) ? "shade-2" : "brand"}
                                 mr={GUTTER_SIZE}
                                 borderRadius="50%"
+                                border="2px solid"
+                                borderColor="gray"
                               >
                                 {isLastItem(item, i) ? <PlusIcon /> : i + 1}
                               </BoxBorder>
@@ -332,7 +335,7 @@ class App extends React.PureComponent<Props, State> {
                               {!isLastItem(item, i) &&
                                 this.state.items.length > 1 && <CrossIcon />}
                             </Box>
-                          </Box>
+                          </BoxBorder>
                         )}
                       </Draggable>
                     ))}
