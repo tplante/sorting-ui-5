@@ -17,7 +17,6 @@ import { CrossIcon } from "@mentimeter/ragnar-visuals";
 const SKIP_VALUE = "skip";
 const DEFAULT_OPTION = "Select an option";
 const ICON_SIZE = 20;
-const ICON_MARGIN = 5;
 const GRID_SIZE = 20;
 const GUTTER_SIZE = GRID_SIZE / 2;
 const ITEM_SIZE = GRID_SIZE * 2;
@@ -49,8 +48,8 @@ const getItemStyle = (isDragging, draggableStyle, isLastItem) => ({
   position: "relative",
   userSelect: "none",
   // Change background color if dragging
-  background: isDragging || isLastItem ? "transparent" : "#d8d8d8",
-  border: isDragging || isLastItem ? "2px dashed #d8d8d8" : "2px solid #d8d8d8",
+  background: isDragging || isLastItem ? "transparent" : "#D8D8D8",
+  border: isDragging || isLastItem ? "2px dashed #D8D8D8" : "2px solid #D8D8D8",
   // Styles to apply on draggables
   ...draggableStyle
 });
@@ -61,24 +60,14 @@ const iconStyles = {
 };
 const moveIconStyles = {
   ...iconStyles,
-  position: "absolute",
-  left: -ICON_SIZE - ICON_MARGIN,
-  top: GRID_SIZE,
   stroke: "#2C5C6C"
 };
 const plusIconStyles = {
   ...iconStyles,
   stroke: "#FFFFFF"
 };
-const optionStyles = {
-  display: "flex",
-  justifyContent: "space-between",
-  fontWeight: "bold",
-  cursor: "pointer",
-  borderRadius: 3,
-  margin: `${GUTTER_SIZE}px ${GRID_SIZE}px 0 ${GRID_SIZE}px`,
-  padding: `${GUTTER_SIZE}px 0 ${GUTTER_SIZE}px ${GUTTER_SIZE}px`
-};
+
+const itemsAreMoveable = items => items.length > 2;
 
 const ArrowIcon = ({ show }) => {
   return (
@@ -188,8 +177,7 @@ class App extends React.PureComponent<Props, State> {
         const newItem = this.getNewItem(options, menuId);
         items.push(newItem);
       }
-      const itemsAreMoveable = items.length > 2;
-      if (itemsAreMoveable) {
+      if (itemsAreMoveable(items)) {
         items.forEach(item => (item.showMovableIcon = item.val !== SKIP_VALUE));
       }
     }
@@ -241,9 +229,15 @@ class App extends React.PureComponent<Props, State> {
       index === this.state.items.length - 1 && // Last item
       this.state.items.length !== 1; // More than one available option
     return (
-      <div ref={this.container}>
-        <Box width="100%" height="100%" maxWidth="450px" m="0 auto">
-          <Box my={2} alignItems="center">
+      <Box
+        ref={this.container}
+        alignItems="center"
+        height="100%"
+        maxWidth="400px"
+        m="0 auto"
+      >
+        <Box mx={GUTTER_SIZE}>
+          <Box width="100%" my={2} alignItems="center">
             <Text fontSize={5} fontWeight="bold" textAlign="center">
               Choose your favorite candidates
             </Text>
@@ -252,94 +246,122 @@ class App extends React.PureComponent<Props, State> {
             <DragDropContext onDragEnd={this.handleDragEnd}>
               <Droppable droppableId="droppable">
                 {(provided, snapshot) => (
-                  <div ref={provided.innerRef}>
+                  <Box
+                    ref={provided.innerRef}
+                    width="100%"
+                    justifyContent="center"
+                  >
                     {this.state.items.map((item, i) => (
                       <Draggable key={item.id} draggableId={item.id} index={i}>
                         {(provided, snapshot) => (
                           <div
-                            id={item.id}
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            style={{
-                              ...getItemStyle(
-                                snapshot.isDragging,
-                                provided.draggableProps.style,
-                                isLastItem(item, i)
-                              ),
-                              ...optionStyles
-                            }}
+                            style={{ width: "100%" }}
                           >
-                            {!isLastItem(item, i) && (
-                              <ArrowIcon show={item.showMovableIcon} />
-                            )}
-                            <Label
-                              value={isLastItem(item, i) ? "+" : i + 1}
-                              htmlFor={`menu-${i}`}
-                              color="white"
-                              mt={1}
-                            >
-                              <BoxBorder
-                                alignItems="center"
-                                justifyContent="center"
-                                width={ITEM_SIZE}
-                                height={ITEM_SIZE}
-                                bg="brand"
-                                mr={GUTTER_SIZE}
-                                borderRadius="50%"
-                              >
-                                {isLastItem(item, i) ? <PlusIcon /> : i + 1}
-                              </BoxBorder>
-                            </Label>
                             <Box
-                              flex={1}
-                              alignItems="center"
+                              width="100%"
+                              flexDirection="columns"
+                              alignItems="space-between"
                               justifyContent="center"
+                              mb={GUTTER_SIZE}
                             >
-                              <Select
-                                id={`menu-${i}`}
-                                name={`menu-${i}`}
-                                onChange={this.handleChange}
-                                pr="20px"
-                              >
-                                <Select.Option
-                                  id={SKIP_VALUE}
-                                  value={SKIP_VALUE}
-                                  defaultValue
-                                  disabled={item.val !== SKIP_VALUE}
+                              {itemsAreMoveable(this.state.items) && (
+                                <Box
+                                  mr={`${GUTTER_SIZE}px`}
+                                  justifyContent="center"
                                 >
-                                  {DEFAULT_OPTION}
-                                </Select.Option>
-                                {this.state.options.map(
-                                  ({ label, id, selected }) =>
-                                    (!selected || item.val === id) && (
-                                      <Select.Option
-                                        key={id}
-                                        id={id}
-                                        value={id}
-                                      >
-                                        {label}
-                                      </Select.Option>
-                                    )
-                                )}
-                              </Select>
-                            </Box>
-                            <Box
-                              id={`deselect-${i}`}
-                              onClick={this.handleDeselect}
-                              alignItems="center"
-                              justifyContent="center"
-                              px={2}
-                            >
-                              {!isLastItem(item, i) &&
-                                this.state.items.length > 1 && <CrossIcon />}
+                                  <ArrowIcon show={item.showMovableIcon} />
+                                </Box>
+                              )}
+                              <BoxBorder
+                                id={item.id}
+                                flex={1}
+                                flexDirection="columns"
+                                alignItems="center"
+                                borderRadius="3px"
+                                p={`${GUTTER_SIZE}px 0 ${GUTTER_SIZE}px ${GUTTER_SIZE}px`}
+                                style={{
+                                  ...getItemStyle(
+                                    snapshot.isDragging,
+                                    provided.draggableProps.style,
+                                    isLastItem(item, i)
+                                  )
+                                }}
+                              >
+                                <Label
+                                  value={isLastItem(item, i) ? "+" : i + 1}
+                                  htmlFor={`menu-${i}`}
+                                  color="white"
+                                  mt={1}
+                                  fontWeight="bold"
+                                >
+                                  <BoxBorder
+                                    alignItems="center"
+                                    justifyContent="center"
+                                    width={ITEM_SIZE}
+                                    height={ITEM_SIZE}
+                                    bg="brand"
+                                    mr={GUTTER_SIZE}
+                                    borderRadius="50%"
+                                  >
+                                    {isLastItem(item, i) ? <PlusIcon /> : i + 1}
+                                  </BoxBorder>
+                                </Label>
+                                <Box
+                                  flex={1}
+                                  alignItems="center"
+                                  justifyContent="center"
+                                >
+                                  <Select
+                                    id={`menu-${i}`}
+                                    name={`menu-${i}`}
+                                    onChange={this.handleChange}
+                                    pr="20px"
+                                  >
+                                    <Select.Option
+                                      id={SKIP_VALUE}
+                                      value={SKIP_VALUE}
+                                      defaultValue
+                                      disabled={item.val !== SKIP_VALUE}
+                                    >
+                                      {DEFAULT_OPTION}
+                                    </Select.Option>
+                                    {this.state.options.map(
+                                      ({ label, id, selected }) =>
+                                        (!selected || item.val === id) && (
+                                          <Select.Option
+                                            key={id}
+                                            id={id}
+                                            value={id}
+                                          >
+                                            {label}
+                                          </Select.Option>
+                                        )
+                                    )}
+                                  </Select>
+                                </Box>
+                                <Box
+                                  id={`deselect-${i}`}
+                                  onClick={this.handleDeselect}
+                                  alignItems="center"
+                                  justifyContent="center"
+                                  px={2}
+                                >
+                                  {!isLastItem(item, i) &&
+                                    this.state.items.length > 1 && (
+                                      <CrossIcon />
+                                    )}
+                                </Box>
+                              </BoxBorder>
                             </Box>
                           </div>
                         )}
                       </Draggable>
                     ))}
                     {provided.placeholder}
-                  </div>
+                  </Box>
                 )}
               </Droppable>
             </DragDropContext>
@@ -348,7 +370,7 @@ class App extends React.PureComponent<Props, State> {
             </Box>
           </Box>
         </Box>
-      </div>
+      </Box>
     );
   }
 }
