@@ -21,6 +21,8 @@ const ICON_MARGIN = 5;
 const GRID_SIZE = 20;
 const GUTTER_SIZE = GRID_SIZE / 2;
 const ITEM_SIZE = GRID_SIZE * 2;
+const SHADE_2 = "rgb(195, 200, 213)";
+const SHADE_3 = "rgb(37, 43, 54)";
 
 const options = [
   { label: "Hillary Clinton" },
@@ -50,9 +52,7 @@ const getItemStyle = (isDragging, draggableStyle, isLastItem) => ({
   userSelect: "none",
   overflow: "visible",
   border:
-    isDragging || isLastItem
-      ? "2px dashed rgb(195, 200, 213)"
-      : "2px solid rgb(195, 200, 213)",
+    isDragging || isLastItem ? `2px dashed ${SHADE_2}` : `2px solid ${SHADE_2}`,
   // Styles to apply on draggables
   ...draggableStyle
 });
@@ -65,7 +65,7 @@ const moveIconStyles = {
 const ArrowIcon = () => {
   return (
     <svg
-      stroke="rgb(37, 43, 54)"
+      stroke={SHADE_3}
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
