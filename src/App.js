@@ -229,8 +229,8 @@ class App extends React.PureComponent<Props, State> {
     return (
       <Box ref={this.container} alignItems="center">
         <Box width="80%" maxWidth="350px">
-          <Box mt={2}>
-            <Text fontSize={5} fontWeight="bold" textAlign="center">
+          <Box mt={4}>
+            <Text fontSize={4} fontWeight="bold" textAlign="center">
               Choose your favorite candidates
             </Text>
           </Box>
