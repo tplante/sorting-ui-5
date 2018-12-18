@@ -229,16 +229,22 @@ class App extends React.PureComponent<Props, State> {
     return (
       <Box ref={this.container} alignItems="center">
         <Box width="80%" maxWidth="350px">
-          <Box my={2} alignItems="center">
+          <Box mt={2}>
             <Text fontSize={5} fontWeight="bold" textAlign="center">
               Choose your favorite candidates
             </Text>
+          </Box>
+          <Box my={2}>
+            <Text
+              fontSize={1}
+            >{`Select as many as you want in the order you prefer.
+              There are ${options.length} options in total.`}</Text>
           </Box>
           <Box width="100%" alignItems="center">
             <DragDropContext onDragEnd={this.handleDragEnd}>
               <Droppable droppableId="droppable">
                 {provided => (
-                  <Box ref={provided.innerRef} width="100%" alignItems="center">
+                  <Box ref={provided.innerRef} width="100%">
                     {this.state.items.map((item, i) => (
                       <Draggable key={item.id} draggableId={item.id} index={i}>
                         {(provided, snapshot) => (
@@ -248,10 +254,8 @@ class App extends React.PureComponent<Props, State> {
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                             width="100%"
-                            height="100%"
                             flexDirection="columns"
                             alignItems="center"
-                            justifyContent="space-between"
                             mb={GUTTER_SIZE}
                             // Change background color if dragging
                             bg={
@@ -292,11 +296,7 @@ class App extends React.PureComponent<Props, State> {
                                 {isLastItem(item, i) ? <PlusIcon /> : i + 1}
                               </BoxBorder>
                             </Label>
-                            <Box
-                              flex={1}
-                              alignItems="center"
-                              justifyContent="center"
-                            >
+                            <Box flex={1}>
                               <Select
                                 id={`menu-${i}`}
                                 name={`menu-${i}`}
@@ -328,8 +328,6 @@ class App extends React.PureComponent<Props, State> {
                             <Box
                               id={`deselect-${i}`}
                               onClick={this.handleDeselect}
-                              alignItems="center"
-                              justifyContent="center"
                               px={2}
                             >
                               {!isLastItem(item, i) &&
@@ -345,7 +343,9 @@ class App extends React.PureComponent<Props, State> {
               </Droppable>
             </DragDropContext>
             <Box my={3}>
-              <Button onSubmit={this.handleSubmit}>Submit</Button>
+              <Button onClick={this.handleSubmit}>
+                {this.state.submitted ? "Nice!" : "Submit"}
+              </Button>
             </Box>
           </Box>
         </Box>
