@@ -135,15 +135,15 @@ class App extends React.PureComponent<Props, State> {
     const menu = container.querySelector(`#${draggableId} select`);
     // Convert NodeList to array
     const menus = Array.from(container.querySelectorAll("select"));
-    const movedLastItem = menu.value === SKIP_VALUE;
+    const movedPlaceholderItem = menu.value === SKIP_VALUE;
     // Dropped outside the list or an empty option is not last index
-    if (!destination || movedLastItem) {
+    if (!destination || movedPlaceholderItem) {
       return;
     }
-    const movedPastLastItem = menus.some(
+    const movedPastPlaceholderItem = menus.some(
       (m, i) => m.value === SKIP_VALUE && destination.index === i
     );
-    const destinationIndex = movedPastLastItem
+    const destinationIndex = movedPastPlaceholderItem
       ? destination.index - 1
       : destination.index;
     const items = reorder(this.state.items, source.index, destinationIndex);
@@ -172,8 +172,8 @@ class App extends React.PureComponent<Props, State> {
       const shouldAddItem =
         items.length < options.length && menuId === items.length - 1; // Still menus left to append // Is the last menu item currently rendered
       if (shouldAddItem) {
-        const newItem = this.getNewItem(options, menuId);
-        items.push(newItem);
+        const placeholderItem = this.getPlaceholderItem(options, menuId);
+        items.push(placeholderItem);
       }
       const itemsAreMoveable = items.length > 2;
       if (itemsAreMoveable) {
@@ -184,11 +184,11 @@ class App extends React.PureComponent<Props, State> {
     this.setState({ options, items });
   };
 
-  getNewItem = (options, menuId) => {
-    const newItem = { ...options[menuId + 1] }; // Copy of next option, prevent mutation
-    newItem.id = `option-${options.length + this.keyGenerationIndex}`;
+  getPlaceholderItem = (options, menuId) => {
+    const placeholderItem = { ...options[menuId + 1] }; // Copy of next option, prevent mutation
+    placeholderItem.id = `option-${options.length + this.keyGenerationIndex}`;
     this.keyGenerationIndex++;
-    return newItem;
+    return placeholderItem;
   };
 
   handleDeselect = event => {
@@ -210,11 +210,11 @@ class App extends React.PureComponent<Props, State> {
       }
     });
     // Move deselected item to end of list
-    const newItem = this.getNewItem(options, menuId);
-    newItem.val = SKIP_VALUE;
-    newItem.showMovableIcon = false;
+    const placeholderItem = this.getPlaceholderItem(options, menuId);
+    placeholderItem.val = SKIP_VALUE;
+    placeholderItem.showMovableIcon = false;
     items.splice(menuId, 1);
-    items.push(newItem);
+    items.push(placeholderItem);
     this.setState({ options, items });
   };
 
