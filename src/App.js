@@ -135,17 +135,18 @@ class App extends React.PureComponent<Props, State> {
     const menu = container.querySelector(`#${draggableId} select`);
     // Convert NodeList to array
     const menus = Array.from(container.querySelectorAll("select"));
-    const preventReorder =
-      menu.value === SKIP_VALUE ||
-      menus.some(
-        (m, i) =>
-          m.value === SKIP_VALUE && destination && destination.index === i
-      );
+    const movedLastItem = menu.value === SKIP_VALUE;
     // Dropped outside the list or an empty option is not last index
-    if (!destination || preventReorder) {
+    if (!destination || movedLastItem) {
       return;
     }
-    const items = reorder(this.state.items, source.index, destination.index);
+    const movedPastLastItem = menus.some(
+      (m, i) => m.value === SKIP_VALUE && destination.index === i
+    );
+    const destinationIndex = movedPastLastItem
+      ? destination.index - 1
+      : destination.index;
+    const items = reorder(this.state.items, source.index, destinationIndex);
     this.setState({ items });
   };
 
