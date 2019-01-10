@@ -11,6 +11,7 @@ import {
 import { CrossIcon } from "@mentimeter/ragnar-visuals";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
+const QUESTION_ID = "35b5f7a09224"; // TODO: replace with question id from props
 const SKIP_VALUE = "skip";
 const PLACEHOLDER_VALUE = "Select an option";
 const ICON_SIZE = 20;
@@ -19,22 +20,23 @@ const GRID_SIZE = 20;
 const GUTTER_SIZE = GRID_SIZE / 2;
 const ITEM_SIZE = GRID_SIZE * 2;
 const BORDER_WIDTH = 2;
-const SHADE_2 = "rgb(195, 200, 213)";
-const SHADE_3 = "rgb(37, 43, 54)";
+const SHADE_2 = "rgb(195, 200, 213)"; // TODO: get from design system
+const SHADE_3 = "rgb(37, 43, 54)"; // TODO: get from design system
 
-const options = [
-  { label: "Hillary Clinton" },
-  { label: "George Washington" },
-  { label: "Barack Obama" },
-  { label: "Bernie Sanders" },
-  { label: "John Adams" },
-  { label: "Marco Rubio" },
-  { label: "Donald Trump" },
-  { label: "Ron Swanson" },
-  { label: "Ron Burgandy" },
-  { label: "Abraham Lincoln" },
-  { label: "Jeb Bush" },
-  { label: "Kanye West" }
+// TODO: replace with choices from props
+const choices = [
+  { label: "Hillary Clinton", optionId: 0 },
+  { label: "George Washington", optionId: 1 },
+  { label: "Barack Obama", optionId: 2 },
+  { label: "Bernie Sanders", optionId: 3 },
+  { label: "John Adams", optionId: 4 },
+  { label: "Marco Rubio", optionId: 5 },
+  { label: "Donald Trump", optionId: 6 },
+  { label: "Ron Swanson", optionId: 7 },
+  { label: "Ron Burgandy", optionId: 8 },
+  { label: "Abraham Lincoln", optionId: 9 },
+  { label: "Jeb Bush", optionId: 10 },
+  { label: "Kanye West", optionId: 11 }
 ];
 
 const reorder = (list, startIndex, endIndex) => {
@@ -58,9 +60,10 @@ const getItemStyles = (isDragging, draggableStyle, isLastItem) => ({
 const moveIconStyles = {
   position: "absolute",
   left: -ICON_SIZE - ICON_MARGIN,
-  padding: `${GRID_SIZE}px ${ICON_MARGIN / 2}px`
+  padding: `${ICON_SIZE}px ${ICON_MARGIN / 2}px`
 };
 
+// TODO: remove somehow
 const Icon = ({ children, stroke, style = {} }) => (
   <svg
     stroke={stroke}
@@ -76,7 +79,8 @@ const Icon = ({ children, stroke, style = {} }) => (
   </svg>
 );
 
-const ArrowIcon = () => (
+// TODO: move to ragnar-visuals
+const MoveIcon = () => (
   <Icon stroke={SHADE_3} style={moveIconStyles}>
     <polyline points="3.7 7.3 1 10 3.7 12.7" />
     <polyline points="7.3 3.7 10 1 12.7 3.7" />
@@ -87,6 +91,7 @@ const ArrowIcon = () => (
   </Icon>
 );
 
+// TODO: move to ragnar-visuals
 const PlusIcon = () => (
   <Icon stroke="white">
     <path d="M1,10 L19,10" />
@@ -98,26 +103,27 @@ class App extends React.PureComponent<Props, State> {
   state = {
     items: [],
     options: [],
-    submitted: false
+    submitted: false // TODO: remove
   };
 
   container = createRef();
 
   componentDidMount() {
     this.keyGenerationIndex = 1;
-    this.setOptions(options);
+    this.setOptions();
   }
 
   getPlaceholderItem = (options, menuId) => {
     const placeholderItem = { ...options[menuId + 1] }; // Copy of next option, prevent mutation
     placeholderItem.id = `option-${options.length + this.keyGenerationIndex}`;
-    this.keyGenerationIndex++;
+    this.keyGenerationIndex++; // Prevent duplicate keys when elements are deleted and re-added
     return placeholderItem;
   };
 
-  setOptions = choices => {
+  setOptions = () => {
     const options = choices.map((c, i) => ({
       id: `option-${i}`,
+      optionId: c.optionId,
       label: c.label,
       selected: false,
       showMovableIcon: false,
@@ -142,11 +148,12 @@ class App extends React.PureComponent<Props, State> {
     if (!destination || movedPlaceholderItem) {
       return;
     }
+    // No item can be moved past the last item when it still has the placeholder value
     const movedPastPlaceholderItem = menus.some(
       (m, i) => m.value === SKIP_VALUE && destination.index === i
     );
     const destinationIndex = movedPastPlaceholderItem
-      ? destination.index - 1
+      ? destination.index - 1 // Update destination to second to last
       : destination.index;
     const items = reorder(this.state.items, source.index, destinationIndex);
     this.setState({ items });
@@ -157,8 +164,8 @@ class App extends React.PureComponent<Props, State> {
       target,
       target: { value, id, previousValue }
     } = event;
-    const options = [...this.state.options]; // Prevent mutation
-    const items = [...this.state.items]; // Prevent mutation
+    const options = [...this.state.options]; // Copy state to prevent mutation
+    const items = [...this.state.items];
     // Option was selected before
     if (previousValue) {
       const previousOption = options.find(o => o.id === previousValue);
@@ -169,8 +176,10 @@ class App extends React.PureComponent<Props, State> {
       const option = options.find(o => o.id === value);
       option.selected = true;
       const menuId = getIndexFromId(id);
+      const optionId = getIndexFromId(value);
       const selectedItem = items[menuId];
       selectedItem.val = value;
+      selectedItem.optionId = optionId;
       const shouldAddItem =
         items.length < options.length && menuId === items.length - 1; // Still menus left to append
       if (shouldAddItem) {
@@ -187,7 +196,7 @@ class App extends React.PureComponent<Props, State> {
   };
 
   handleDeselect = event => {
-    const { id } = event.currentTarget; // Selects "this" element instead of any of its children
+    const { id } = event.currentTarget; // currentTarget selects "this" element instead of any of its children
     const options = [...this.state.options]; // Prevent mutation
     const items = [...this.state.items]; // Prevent mutation
     const menuId = getIndexFromId(id);
@@ -211,7 +220,19 @@ class App extends React.PureComponent<Props, State> {
   };
 
   handleSubmit = () => {
-    this.setState({ submitted: !this.state.submitted });
+    const ids = [];
+    this.state.items.forEach(item => {
+      if (item.val !== SKIP_VALUE) {
+        ids.push(item.optionId);
+      }
+    });
+    // TODO: submit with form
+    const payload = {
+      question: QUESTION_ID,
+      question_type: "ranking",
+      vote: ids
+    };
+    this.setState({ submitted: !this.state.submitted }); // TODO: remove
   };
 
   render() {
@@ -231,7 +252,7 @@ class App extends React.PureComponent<Props, State> {
             <Text
               fontSize={1}
             >{`Select as many as you want in the order you prefer.
-              There are ${options.length} options in total.`}</Text>
+              There are ${choices.length} options in total.`}</Text>
           </Box>
           <Box width="100%" alignItems="center">
             <DragDropContext onDragEnd={this.handleDragEnd}>
@@ -267,7 +288,7 @@ class App extends React.PureComponent<Props, State> {
                             }}
                           >
                             {!isLastItem(item, i) &&
-                              item.showMovableIcon && <ArrowIcon />}
+                              item.showMovableIcon && <MoveIcon />}
                             <Label
                               value={isLastItem(item, i) ? "+" : i + 1}
                               htmlFor={`menu-${i}`}
